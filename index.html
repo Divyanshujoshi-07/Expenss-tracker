@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ledger — Smart Expense Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">₹</span>
+      <span class="brand-name">Ledger</span>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item is-active" data-view="dashboard">
+        <span class="nav-num">01</span> Dashboard
+      </button>
+      <button class="nav-item" data-view="transactions">
+        <span class="nav-num">02</span> Transactions
+      </button>
+      <button class="nav-item" data-view="budgets">
+        <span class="nav-num">03</span> Budget Goals
+      </button>
+      <button class="nav-item" data-view="reports">
+        <span class="nav-num">04</span> Monthly Reports
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button id="exportCsvBtn" class="btn btn-ghost btn-block">Export CSV</button>
+      <div class="sidebar-hint">All data stays on this device.</div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <header class="topbar">
+      <div class="topbar-title">
+        <h1 id="viewTitle">Dashboard</h1>
+        <p id="viewSubtitle">Your financial position at a glance.</p>
+      </div>
+      <div class="topbar-actions">
+        <button id="addExpenseBtn" class="btn btn-outline">+ Expense</button>
+        <button id="addIncomeBtn" class="btn btn-primary">+ Income</button>
+      </div>
+    </header>
+
+    <!-- DASHBOARD VIEW -->
+    <section class="view is-active" id="view-dashboard">
+
+      <div class="ledger-hero">
+        <div class="ledger-hero-main">
+          <span class="eyebrow">Current balance</span>
+          <div class="ledger-figure" id="balanceFigure">₹0.00</div>
+          <svg class="sparkline" id="sparkline" viewBox="0 0 300 40" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="ledger-hero-stats">
+          <div class="stat-block stat-in">
+            <span class="stat-label">Income (this month)</span>
+            <span class="stat-value" id="monthIncome">₹0.00</span>
+          </div>
+          <div class="stat-block stat-out">
+            <span class="stat-label">Expenses (this month)</span>
+            <span class="stat-value" id="monthExpense">₹0.00</span>
+          </div>
+          <div class="stat-block stat-net">
+            <span class="stat-label">Net (this month)</span>
+            <span class="stat-value" id="monthNet">₹0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Where it went</h2>
+            <span class="panel-sub" id="pieMonthLabel">This month</span>
+          </div>
+          <div class="panel-body pie-body">
+            <canvas id="categoryPie" height="220"></canvas>
+            <ul class="receipt-legend" id="receiptLegend"></ul>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>6-month trend</h2>
+            <span class="panel-sub">Income vs expense</span>
+          </div>
+          <div class="panel-body">
+            <canvas id="trendChart" height="220"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Budget goals</h2>
+          <span class="panel-sub">Progress this month</span>
+        </div>
+        <div class="panel-body">
+          <div id="dashboardBudgets" class="budget-list"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Recent activity</h2>
+          <button class="link-btn" data-view-link="transactions">View all →</button>
+        </div>
+        <div class="panel-body">
+          <table class="ledger-table" id="recentTable">
+            <thead>
+              <tr><th>Date</th><th>Description</th><th>Category</th><th class="num">Amount</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TRANSACTIONS VIEW -->
+    <section class="view" id="view-transactions">
+      <div class="panel">
+        <div class="panel-head panel-head-filters">
+          <h2>All transactions</h2>
+          <div class="filters">
+            <select id="filterType">
+              <option value="all">All types</option>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+            <select id="filterCategory">
+              <option value="all">All categories</option>
+            </select>
+            <input type="month" id="filterMonth">
+            <button id="clearFiltersBtn" class="btn btn-ghost btn-sm">Clear</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <table class="ledger-table" id="txTable">
+            <thead>
+              <tr>
+                <th>Date</th><th>Description</th><th>Category</th><th>Type</th>
+                <th class="num">Amount</th><th class="num">Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <p class="empty-state" id="txEmptyState">No transactions yet. Add your first one with the buttons above.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- BUDGETS VIEW -->
+    <section class="view" id="view-budgets">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Monthly budget goals</h2>
+          <button id="addBudgetBtn" class="btn btn-primary btn-sm">+ New goal</button>
+        </div>
+        <div class="panel-body">
+          <div id="budgetsList" class="budget-list budget-list-full"></div>
+          <p class="empty-state" id="budgetEmptyState">No budget goals set. Create one to start tracking limits.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- REPORTS VIEW -->
+    <section class="view" id="view-reports">
+      <div class="panel">
+        <div class="panel-head panel-head-filters">
+          <h2>Monthly report</h2>
+          <div class="filters">
+            <input type="month" id="reportMonth">
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="ledger-hero-stats report-stats">
+            <div class="stat-block stat-in">
+              <span class="stat-label">Total income</span>
+              <span class="stat-value" id="reportIncome">₹0.00</span>
+            </div>
+            <div class="stat-block stat-out">
+              <span class="stat-label">Total expenses</span>
+              <span class="stat-value" id="reportExpense">₹0.00</span>
+            </div>
+            <div class="stat-block stat-net">
+              <span class="stat-label">Net savings</span>
+              <span class="stat-value" id="reportNet">₹0.00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head"><h2>Category breakdown</h2></div>
+          <div class="panel-body pie-body">
+            <canvas id="reportPie" height="220"></canvas>
+            <ul class="receipt-legend" id="reportLegend"></ul>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Category ledger</h2></div>
+          <div class="panel-body">
+            <table class="ledger-table" id="reportTable">
+              <thead><tr><th>Category</th><th class="num">Count</th><th class="num">Total</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ADD/EDIT TRANSACTION MODAL -->
+<div class="modal-backdrop" id="txModalBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="txModalTitle">Add expense</h3>
+      <button class="modal-close" id="txModalClose">&times;</button>
+    </div>
+    <form id="txForm" class="modal-form">
+      <input type="hidden" id="txId">
+      <input type="hidden" id="txType" value="expense">
+
+      <div class="form-row">
+        <label for="txAmount">Amount</label>
+        <input type="number" id="txAmount" step="0.01" min="0.01" placeholder="0.00" required>
+      </div>
+
+      <div class="form-row">
+        <label for="txCategory">Category</label>
+        <select id="txCategory" required></select>
+      </div>
+
+      <div class="form-row">
+        <label for="txDescription">Description</label>
+        <input type="text" id="txDescription" placeholder="e.g. Grocery run at DMart" required>
+      </div>
+
+      <div class="form-row">
+        <label for="txDate">Date</label>
+        <input type="date" id="txDate" required>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="txCancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="txSubmitBtn">Add expense</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ADD/EDIT BUDGET MODAL -->
+<div class="modal-backdrop" id="budgetModalBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="budgetModalTitle">New budget goal</h3>
+      <button class="modal-close" id="budgetModalClose">&times;</button>
+    </div>
+    <form id="budgetForm" class="modal-form">
+      <input type="hidden" id="budgetOriginalCategory">
+
+      <div class="form-row">
+        <label for="budgetCategory">Category</label>
+        <select id="budgetCategory" required></select>
+      </div>
+
+      <div class="form-row">
+        <label for="budgetLimit">Monthly limit</label>
+        <input type="number" id="budgetLimit" step="0.01" min="1" placeholder="0.00" required>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="budgetCancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save goal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/transactions.js"></script>
+<script src="js/budgets.js"></script>
+<script src="js/export.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
