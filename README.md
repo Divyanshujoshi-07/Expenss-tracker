@@ -43,18 +43,9 @@ The goal of this project is to provide an easy-to-use expense management system 
 * AI-powered spending analysis
 * Currency converter and multi-currency support
 
-## 📸 Screenshots
-
-Add screenshots of your application here to showcase the user interface.
-
 ## 🤝 Contributing
 
 Contributions, suggestions, and improvements are welcome. Feel free to fork this repository, create a new branch, and submit a pull request.
 
-## 📄 License
-
-This project is open-source and available under the MIT License.
-
----
 
 ⭐ If you like this project, don't forget to **star the repository** and share your feedback!
